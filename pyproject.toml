@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "phishing_detection"
+version = "0.0.1"
+authors = [
+  { name="Marcin Szadkowski", email="marcinsz9045@gmail.com" },
+]
+description = "A comprehensive Python script that automates the detection and analysis of phishing websites using multiple data sources and detection engines."
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+dependencies = [
+]
+
+[project.optional-dependencies]
+dev = [
+    "ipython",
+    "python-dotenv",
+]
+tests = [
+    "black",
+    "flake8",
+    "isort"
+]
+cli = []
+
+[project.urls]
+Homepage = "https://github.com/Marcin-Szadkowski/phishing-detection"
+Issues = "https://github.com/Marcin-Szadkowski/phishing-detection/issues"
