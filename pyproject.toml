@@ -21,8 +21,10 @@ license-files = ["LICEN[CS]E*"]
 
 dependencies = [
     "vt-py",
+    "asyncio",
+    "aiohttp",
     "requests",
-    "google-cloud-phishing-protection",
+    "protobuf",
     "playwright",
     "typer",
 ]
@@ -44,3 +46,15 @@ Issues = "https://github.com/Marcin-Szadkowski/phishing-detection/issues"
 
 [project.scripts]
 phishing-detection = "phishing_detection.cli:app"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = 88
+exclude = [
+    "safe_browsing_response_pb2.py"
+]

@@ -3,14 +3,10 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TypedDict
 
-# class DetectionMechanismTypes(Enum):
-#     VIRUS_TOTAL = "VIRUS_TOTAL"
-#     GOOGLE_SAFE_BROWSING_API = "GOOGLE_SAFE_BROWSING_API"
-
 
 class IDetectionMechanism(ABC):
     @abstractmethod
-    def check_url(self, url: str) -> bool:
+    async def check_url(self, url: str) -> bool:
         raise NotImplementedError
 
     @property
@@ -38,8 +34,8 @@ class VirusTotalDetectionMechanism(IDetectionMechanism):
     def __init__(self, client):
         self._client = client
 
-    def check_url(self, url: str) -> bool:
-        report = self._client.get_url_report(url)
+    async def check_url(self, url: str) -> bool:
+        report = await self._client.get_url_report(url)
         return VirusTotalPhishingPolicy.is_phishing(report)
 
     @property
@@ -51,8 +47,8 @@ class GoogleSafeBrowsingV4DetectionMechanism(IDetectionMechanism):
     def __init__(self, client):
         self._client = client
 
-    def check_url(self, url: str) -> bool:
-        response = self._client.get_threat_matches(url)
+    async def check_url(self, url: str) -> bool:
+        response = await self._client.get_threat_matches(url)
         return response is not None
 
     @property
@@ -64,13 +60,37 @@ class GoogleSafeBrowsingV5DetectionMechanism(IDetectionMechanism):
     def __init__(self, client):
         self._client = client
 
-    def check_url(self, url: str) -> bool:
-        response = self._client.search_url(url)
+    async def check_url(self, url: str) -> bool:
+        response = await self._client.search_url(url)
         return response is not None
 
     @property
     def name(self) -> str:
         return "GOOGLE_SAFE_BROWSING_V5"
+
+
+@dataclass(frozen=True)
+class WebsiteResponse:
+    class ResponseError(Enum):
+        UNSPECIFIED = "UNSPECIFIED"
+        CONNECTION_ERROR = "CONNECTION_ERROR"
+        REDIRECTED_WITHOUT_LOCATION = "REDIRECTED_WITHOUT_LOCATION"
+        REDIRECTED_WITH_LOCATION = "REDIRECTED_WITH_LOCATION"
+
+    status_code: int | None = None
+    error: ResponseError | None = None
+
+
+class WebsiteStatusPolicy:
+    @staticmethod
+    def is_up(response: WebsiteResponse) -> bool:
+        if response.error:
+            # Or consider as down?
+            if response.error is WebsiteResponse.ResponseError.REDIRECTED_WITH_LOCATION:
+                return True
+            return False
+        return response.status_code == 200
+
 
 class CombinedPhishingReport(TypedDict):
     detection_mechanism: str
