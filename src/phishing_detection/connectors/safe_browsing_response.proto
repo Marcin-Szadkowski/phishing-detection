@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package google.security.safebrowsing.v5;
+
+/*
+    https://developers.google.com/safe-browsing/reference/rest/v5/hashes/search#FullHashDetail
+*/
+
+// Enum for different types of threats
+enum ThreatType {
+  THREAT_TYPE_UNSPECIFIED = 0;
+  MALWARE = 1;
+  SOCIAL_ENGINEERING = 2;
+  UNWANTED_SOFTWARE = 3;
+  POTENTIALLY_HARMFUL_APPLICATION = 4;
+}
+
+// Enum for threat attributes
+enum ThreatAttribute {
+  THREAT_ATTRIBUTE_UNSPECIFIED = 0;
+  CANARY = 1;
+  FRAME_ONLY = 2;
+}
+
+// Detailed threat information for a full hash
+message FullHashDetail {
+  ThreatType threat_type = 1;
+  repeated ThreatAttribute attributes = 2;
+}
+
+// Represents a full hash response from the Safe Browsing API
+message FullHash {
+  bytes full_hash = 1; // The actual hash value
+  repeated FullHashDetail full_hash_details = 2;
+}
+
+// The main Safe Browsing API response structure
+message SafeBrowsingResponse {
+  repeated FullHash full_hashes = 1;
+  int32 cache_duration = 2; // Cache duration in seconds
+}
