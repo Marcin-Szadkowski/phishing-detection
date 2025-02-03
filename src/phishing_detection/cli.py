@@ -8,7 +8,7 @@ from phishing_detection.connectors.domains_source import OpenPhishClient
 from phishing_detection.connectors.website_status import WebsiteStatusClient
 
 try:
-    from dotenv import load_dotenv
+    from dotenv import load_dotenv  # type: ignore
 
     load_dotenv()
 except ImportError:
@@ -106,11 +106,6 @@ def check_all_website_statuses():
         ]
         results = asyncio.run(run_multiple_tasks(tasks))
         typer.echo(results)
-
-
-@app.command()
-def hello():
-    typer.echo("Hello World!")
 
 
 if __name__ == "__main__":
