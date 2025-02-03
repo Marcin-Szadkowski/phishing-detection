@@ -27,6 +27,7 @@ dependencies = [
     "protobuf",
     "playwright",
     "typer",
+    "pandas",
 ]
 
 [project.optional-dependencies]
@@ -37,7 +38,8 @@ dev = [
 tests = [
     "black",
     "flake8",
-    "isort"
+    "isort",
+    "pytest",
 ]
 
 [project.urls]
