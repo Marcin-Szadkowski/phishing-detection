@@ -1,31 +1,34 @@
 # phishing-detection
 A comprehensive Python script that automates the detection and analysis of phishing websites using multiple data sources and detection engines.
 
-# CLI usage
+# Usage
+Check [pyprojectl.toml](pyproject.toml) for supported Python versions.
+
+To install package in development environment run:
+
 ```bash
-
+  pip install -e .[dev]
 ```
-TODO:
-after installation run `playwright install` to install the browser
 
-### The goal
-As in input we have some domains reported as phishing. The goal is to discover if they are really phishing domains.
+Or install exact versions of dependencies:
 
-# TODO 
-Q: How to check DNS filter for phishing domains?
-Try to get Phishtank database https://phishtank.org/developer_info.php
+```bash
+  pip install -e . --no-deps
+  pip install -r requirements.txt
+```
 
-Q: Does VirusTotal provide 0-1 score for phishing domains? Pay attention to vendors
+See [settings.py](src/phishing_detection/settings.py) for necessary ENV variables. Provided that you installed
+the package with `dev` dependencies you can create `.env`. The variables defined in `.evn` will be loaded at entry point
+(`cli`). 
 
-Q: Comparing Google Safe Browsing v4 and v5 API:
-All results found by v5 are also found by v4, but v4 has more results.
 
-Q: What is Google Enhanced Safe Browsing?
+### CLI
+See available commands by running:
+```bash
+  phishing-deteciton --help
+```
 
-`ulr_blocked_in_my_browser=https://page-support-case-review-center.dpi68s8j63ukb.amplifyapp.com/`
-
-https://blog.chromium.org/2024/02/optimizing-safe-browsing-checks-in.html
-
-# Chromium sandboxing
-https://github.com/microsoft/playwright/issues/1977
-https://chromium.googlesource.com/chromium/src/+/master/docs/design/sandbox_faq.md
+See available options for a command by running:
+```bash
+  phishing-detection <command> --help
+```
