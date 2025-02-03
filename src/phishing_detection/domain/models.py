@@ -15,6 +15,20 @@ class IDetectionMechanism(ABC):
         raise NotImplementedError
 
 
+class IAnalysisReport(ABC):
+    @abstractmethod
+    def save_as_csv(self, path: str):
+        raise NotImplementedError
+
+    @abstractmethod
+    def read_from_csv(self, path: str):
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_stats(self) -> dict[str, float]:
+        raise NotImplementedError
+
+
 @dataclass
 class VirusTotalUrlReport:
     harmless: int
@@ -26,7 +40,11 @@ class VirusTotalUrlReport:
 
 class VirusTotalPhishingPolicy:
     @staticmethod
-    def is_phishing(report: VirusTotalUrlReport) -> bool:
+    def is_phishing(report: VirusTotalUrlReport | None) -> bool:
+        # TODO this actually needs VirusTotal insights
+        if report is None:
+            return False
+
         return report.malicious >= 3
 
 
@@ -97,11 +115,26 @@ class WebsiteStatusReport:
     url: str
     is_up: bool
 
+    def to_dict(self) -> dict[str, str | bool]:
+        return {
+            "url": self.url,
+            "is_up": self.is_up,
+        }
+
 
 @dataclass(frozen=True)
 class WebsitePhishingReport:
     url: str
     status_by_mechanism: dict[str, bool]
+
+    def to_dict(self) -> dict[str, str | bool]:
+        return {
+            "url": self.url,
+            **{
+                mechanism: status
+                for mechanism, status in self.status_by_mechanism.items()
+            },
+        }
 
 
 class CombinedPhishingReport(TypedDict):

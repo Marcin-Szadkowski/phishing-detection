@@ -41,9 +41,7 @@ def canonical_form(url: str) -> str:
 
     # Normalize hostname
     hostname = hostname.lower()
-    hostname = re.sub(r"\.+", ".", hostname).strip(
-        "."
-    )
+    hostname = re.sub(r"\.+", ".", hostname).strip(".")
 
     try:
         ip = ipaddress.ip_address(hostname)
@@ -59,9 +57,7 @@ def canonical_form(url: str) -> str:
 
     path = re.sub(r"/\./", "/", path)
     while "/../" in path:
-        path = re.sub(
-            r"/[^/]+/\.\./", "/", path
-        )
+        path = re.sub(r"/[^/]+/\.\./", "/", path)
     path = re.sub(r"/+", "/", path)
 
     canonical_url = f"{hostname}{path}"

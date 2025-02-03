@@ -66,11 +66,19 @@ def check_phishing(url: str):
 
 
 @app.command()
-def run_analysis(assess_status: bool = False, check_phishing: bool = False):
+def run_analysis(
+    output_path: str = typer.Argument(
+        default="analysis_report.csv", help="Pass .csv format"
+    ),
+    assess_status: bool = False,
+    check_phishing: bool = False,
+):
 
     report = run_analysis_task(assess_status, check_phishing)
 
-    typer.echo(report)
+    report.save_as_csv(output_path)
+
+    typer.echo(report.get_stats())
 
 
 @app.command()

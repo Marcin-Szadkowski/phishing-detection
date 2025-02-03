@@ -7,6 +7,7 @@ from typing import Callable, Iterable
 from more_itertools import chunked
 
 from phishing_detection import settings
+from phishing_detection.analysis_report import AnalysisReport
 from phishing_detection.connectors.domains_source import OpenPhishClient
 from phishing_detection.connectors.google_safe_browsing import (
     GoogleSafeBrowsingClientV4,
@@ -25,7 +26,7 @@ from phishing_detection.domain.models import (
 logger = getLogger(__name__)
 
 
-BATCH_PROCESSING_SIZE = 5
+BATCH_PROCESSING_SIZE = 100
 
 
 def batch(iterable, size):
@@ -51,19 +52,22 @@ async def process_async(tasks: Iterable[Callable]):
 
 
 def run_analysis_task(assess_status: bool = False, detect_phishing: bool = False):
-    urls_to_check = OpenPhishClient().get_urls()[:20]
+    # TODO find another data source
+    urls_to_check = OpenPhishClient().get_urls()
 
     logger.info(f"Found URLs to check. Count: {len(urls_to_check)}")
 
-    website_statuses, phishing_statuses = [], []
+    report = AnalysisReport(urls_to_check)
 
     if assess_status:
         website_statuses = _assess_website_status(urls_to_check)
+        report.merge_results(website_statuses)
 
     if detect_phishing:
         phishing_statuses = _detect_phishing(urls_to_check)
+        report.merge_results(phishing_statuses)
 
-    return website_statuses + phishing_statuses
+    return report
 
 
 def _assess_website_status(urls_to_check: list[str]):
