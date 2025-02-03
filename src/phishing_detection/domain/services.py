@@ -3,17 +3,19 @@ import logging
 from phishing_detection.connectors.website_status import WebsiteStatusClient
 from phishing_detection.domain.models import (
     IDetectionMechanism,
+    WebsitePhishingReport,
     WebsiteStatusPolicy,
+    WebsiteStatusReport,
 )
 
 logger = logging.getLogger(__name__)
 
 
-async def check_url(
+async def check_phishing(
     url: str,
     detection_mechanisms: list[IDetectionMechanism],
-) -> dict[str, bool]:
-    report = {}
+) -> WebsitePhishingReport:
+    report = WebsitePhishingReport(url=url, status_by_mechanism={})
 
     for detection_mechanism in detection_mechanisms:
         result = await detection_mechanism.check_url(url)
@@ -21,7 +23,7 @@ async def check_url(
             f"Detection mechanism: {detection_mechanism.name}. "
             f"URL: {url} - Is phishing: {result}"
         )
-        report[detection_mechanism.name] = result
+        report.status_by_mechanism[detection_mechanism.name] = result
 
     return report
 
@@ -29,7 +31,7 @@ async def check_url(
 async def check_website_status(
     url: str,
     client: WebsiteStatusClient,
-) -> bool:
+) -> WebsiteStatusReport:
     response = await client.get_status(url)
 
-    return WebsiteStatusPolicy.is_up(response)
+    return WebsiteStatusReport(url=url, is_up=WebsiteStatusPolicy.is_up(response))

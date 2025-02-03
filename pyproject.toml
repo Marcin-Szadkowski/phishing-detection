@@ -28,6 +28,7 @@ dependencies = [
     "playwright",
     "typer",
     "pandas",
+    "more-itertools"
 ]
 
 [project.optional-dependencies]

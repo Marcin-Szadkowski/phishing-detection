@@ -1,6 +1,5 @@
 import asyncio
 from functools import partial
-from itertools import chain, islice
 
 import typer
 
@@ -28,6 +27,7 @@ from phishing_detection.domain.models import (
     GoogleSafeBrowsingV5DetectionMechanism,
     VirusTotalDetectionMechanism,
 )
+from phishing_detection.tasks import batch, run_analysis_task
 
 logging.basicConfig(format="%(levelname)s - %(name)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,22 +35,12 @@ logger = logging.getLogger(__name__)
 app = typer.Typer()
 
 
-def batch(iterable, size):
-    source_iter = iter(iterable)
-    while True:
-        try:
-            batch_iter = islice(source_iter, size)
-            yield chain([next(batch_iter)], batch_iter)
-        except StopIteration:
-            return
-
-
 @app.command()
-def check_url(url: str):
+def check_phishing(url: str):
     typer.echo(f"Checking URL: {url}...")
 
     check_url_callable = partial(
-        services.check_url,
+        services.check_phishing,
         url,
         detection_mechanisms=[
             VirusTotalDetectionMechanism(
@@ -72,6 +62,14 @@ def check_url(url: str):
     )
 
     report = asyncio.run(check_url_callable())
+    typer.echo(report)
+
+
+@app.command()
+def run_analysis(assess_status: bool = False, check_phishing: bool = False):
+
+    report = run_analysis_task(assess_status, check_phishing)
+
     typer.echo(report)
 
 

@@ -92,6 +92,18 @@ class WebsiteStatusPolicy:
         return response.status_code == 200
 
 
+@dataclass(frozen=True)
+class WebsiteStatusReport:
+    url: str
+    is_up: bool
+
+
+@dataclass(frozen=True)
+class WebsitePhishingReport:
+    url: str
+    status_by_mechanism: dict[str, bool]
+
+
 class CombinedPhishingReport(TypedDict):
     detection_mechanism: str
     is_phishing: bool
