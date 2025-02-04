@@ -1,5 +1,13 @@
 import os
 
+_HERE = os.path.abspath(os.path.dirname(__file__))
+_ROOT = os.path.join(
+    _HERE,
+    "..",
+)
+
+CHROME_PROFILE_PATH = os.path.join(_ROOT, "data", "playwright_chrome_profile")
+
 VIRUS_TOTAL_API_KEY = os.getenv("VIRUS_TOTAL_API_KEY", "")
 
 OPEN_PHISH_BASE_URL = os.getenv("OPEN_PHISH_BASE_URL", "")

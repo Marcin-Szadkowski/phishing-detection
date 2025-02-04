@@ -82,20 +82,23 @@ def encode_to_base64(hash_value: bytes) -> str:
 
 
 def open_chrome_with_protection_mode(url: str, enhanced: bool = False):
+    # Chrome 122 is required
     with sync_playwright() as p:
-        args = []
-        # This works
-        # the option is set but actually it doesn't work
-        args.append("--no-sandbox")
+        args = ["--debug"]
 
         if enhanced:
             args.append("--safebrowsing-enable-enhanced-protection")
 
-        browser = p.chromium.launch(headless=False, args=args, channel="chrome")
+        browser = p.chromium.launch_persistent_context(
+            settings.CHROME_PROFILE_PATH,
+            headless=False,
+            args=[
+                "--safebrowsing-enable-enhanced-protection",
+                "--disable-blink-features=AutomationControlled",
+            ],
+        )
 
-        context = browser.new_context()
-
-        page = context.new_page()
+        page = browser.new_page()
         page.goto(url, wait_until="domcontentloaded")
 
         time.sleep(10000)
