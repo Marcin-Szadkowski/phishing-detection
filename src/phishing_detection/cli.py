@@ -3,7 +3,6 @@ from functools import partial
 
 import typer
 
-from phishing_detection.connectors.domains_source import OpenPhishClient
 from phishing_detection.connectors.website_status import WebsiteStatusClient
 
 try:
@@ -23,11 +22,12 @@ from phishing_detection.connectors.google_safe_browsing import (
 from phishing_detection.connectors.virus_total import VirusTotalClient
 from phishing_detection.domain import services
 from phishing_detection.domain.models import (
+    DataSource,
     GoogleSafeBrowsingV4DetectionMechanism,
     GoogleSafeBrowsingV5DetectionMechanism,
     VirusTotalDetectionMechanism,
 )
-from phishing_detection.tasks import batch, run_analysis_task
+from phishing_detection.tasks import run_analysis_task
 
 logging.basicConfig(format="%(levelname)s - %(name)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -70,11 +70,19 @@ def run_analysis(
     output_path: str = typer.Argument(
         default="analysis_report.csv", help="Pass .csv format"
     ),
+    data_source: str = typer.Argument(
+        default="OPEN_PHISH", help="Data source: OPEN_PHISH or PHISH_STATS"
+    ),
     assess_status: bool = False,
     check_phishing: bool = False,
 ):
+    try:
+        DataSource(data_source)
+    except ValueError:
+        typer.echo("Invalid data source")
+        raise typer.Exit(code=1)
 
-    report = run_analysis_task(assess_status, check_phishing)
+    report = run_analysis_task(DataSource(data_source), assess_status, check_phishing)
 
     report.save_as_csv(output_path)
 
@@ -93,25 +101,6 @@ def check_website_status(url: str):
         typer.echo("The website is up!")
     else:
         typer.echo("The website is down!")
-
-
-@app.command()
-def check_all_website_statuses():
-    typer.echo("Checking all URLs...")
-
-    async def run_multiple_tasks(tasks):
-        results = await asyncio.gather(*tasks)
-        return results
-
-    urls = OpenPhishClient(base_url=settings.OPEN_PHISH_BASE_URL).get_urls()
-
-    for batch_urls in batch(urls, 50):
-        tasks = [
-            services.check_website_status(url, client=WebsiteStatusClient())
-            for url in batch_urls
-        ]
-        results = asyncio.run(run_multiple_tasks(tasks))
-        typer.echo(results)
 
 
 if __name__ == "__main__":

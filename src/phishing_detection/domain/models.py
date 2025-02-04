@@ -4,6 +4,11 @@ from enum import Enum
 from typing import TypedDict
 
 
+class DataSource(Enum):
+    OPEN_PHISH = "OPEN_PHISH"
+    PHISH_STATS = "PHISH_STATS"
+
+
 class IDetectionMechanism(ABC):
     @abstractmethod
     async def check_url(self, url: str) -> bool:

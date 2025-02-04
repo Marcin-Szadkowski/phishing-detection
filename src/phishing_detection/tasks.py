@@ -2,13 +2,13 @@ import asyncio
 from functools import partial
 from itertools import chain, islice
 from logging import getLogger
-from typing import Callable, Iterable
+from typing import Any, Callable, Iterable
 
 from more_itertools import chunked
 
 from phishing_detection import settings
 from phishing_detection.analysis_report import AnalysisReport
-from phishing_detection.connectors.domains_source import OpenPhishClient
+from phishing_detection.connectors import domains_source
 from phishing_detection.connectors.google_safe_browsing import (
     GoogleSafeBrowsingClientV4,
     GoogleSafeBrowsingClientV5,
@@ -17,8 +17,10 @@ from phishing_detection.connectors.virus_total import VirusTotalClient
 from phishing_detection.connectors.website_status import WebsiteStatusClient
 from phishing_detection.domain import services
 from phishing_detection.domain.models import (
+    DataSource,
     GoogleSafeBrowsingV4DetectionMechanism,
     GoogleSafeBrowsingV5DetectionMechanism,
+    IAnalysisReport,
     VirusTotalDetectionMechanism,
     WebsiteStatusReport,
 )
@@ -39,21 +41,31 @@ def batch(iterable, size):
             return
 
 
-async def process_async(tasks: Iterable[Callable]):
+async def process_async(tasks: Iterable[Callable]) -> list[Any]:
     asyncio_tasks = []
 
     for task in tasks:
         asyncio_tasks.append(asyncio.create_task(task()))
 
     logger.info("Waiting for async tasks to finish...")
-    results = await asyncio.gather(*asyncio_tasks)
+    results = await asyncio.gather(*asyncio_tasks, return_exceptions=True)
 
-    return results
+    successful_results = [
+        result for result in results if not isinstance(result, Exception)
+    ]
+    failed = [result for result in results if isinstance(result, Exception)]
+
+    logger.error(f"Failed to process {len(failed)} tasks. Some results may be missing.")
+
+    return successful_results
 
 
-def run_analysis_task(assess_status: bool = False, detect_phishing: bool = False):
-    # TODO find another data source
-    urls_to_check = OpenPhishClient().get_urls()
+def run_analysis_task(
+    data_source: DataSource, assess_status: bool = False, detect_phishing: bool = False
+) -> IAnalysisReport:
+    data_source_client = domains_source.get_for_source(data_source)
+
+    urls_to_check = data_source_client.get_urls()
 
     logger.info(f"Found URLs to check. Count: {len(urls_to_check)}")
 
